@@ -6,44 +6,49 @@
     <title>Interop between Javascript and MAUI</title>
 </head>
 <body>
-<script type="text/javascript">
-    var results = []
+    <h1>Output in Action</h1>
+    <p id="calledFunction" style="color: red">Try clicking one of the buttons at the bottom</p>
+    <h1>About this app</h1>
+    <p>
+        This app hosts a WebView in MAUI app.<br />
+        This text is rendered in WebView while the buttons at the bottom are rendered in MAUI.<br />
+        <br />
+        There are two type of functions added in javascript.
+        <ul>
+            <li><b>Synchronous function</b> - "resolveImmediately"</li>
+            <li><b>Asynchronous function</b> - "resolveAfter2Seconds"</li>
+        </ul>
+        <br />
+        Pressing the buttons at the bottom will call respective functions using the <b>WebViewInteropHelper</b> library<br />
+    </p>
+    <h3>Please press the buttons to see the library in action!</h3>
+    <br />
+    <h1>Usage</h1>
+    For Usage, please refer to the ReadMe file in the repository.
+    <script type="text/javascript" src="interopHelper.js"></script>
+    <script type="text/javascript">
+        function resolveAfter2Seconds(id) {
+            document.getElementById("calledFunction").innerHTML =
+                "<b>Asynchronous</b> 'resolveAfter2Seconds' function called!";
+            (new Promise(resolve => {
+                setTimeout(() => { resolve(); }, 2000);
+            })).then(() => {
+                setResult(id, 'resolved after 2 seconds');
+            });
 
-    function getResult(id) {
-        try {
-            var numId = Number(id);
-            var requestedResult = results[numId];
-            delete results[numId]
-            return requestedResult;
-        } catch (ex) {
-            return {
-                'error': JSON.stringify(ex.toString())
-            }
+            return communicateSuccessfulCallToAsyncFunction;
         }
-    }
 
-    function resolveAfter2Seconds(id) {
-        (new Promise(resolve => {
-            setTimeout(() => { resolve(); }, 2000);
-        })).then(() => {
-            results[id] = {
-                result: 'resolved after 2 seconds'
-            }
+        function resolveImmediately() {
+            document.getElementById("calledFunction").innerHTML =
+                "<b>Synchronous</b> 'resolveImmediately' function called!";
+            return {
+                result: 'resolved immediately'
+            };
+        }
 
-            window.location = `http://taskCompleted?${id}`;
-        });
 
-        return {
-            'success': true,
-        };
-    }
 
-    function resolveImmediately() {
-        return{
-            result: 'resolved immediately'
-        };
-    }
-    
-</script>
+    </script>
 </body>
 </html>

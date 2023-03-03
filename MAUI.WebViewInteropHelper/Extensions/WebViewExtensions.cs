@@ -5,6 +5,8 @@ namespace MAUI.WebViewInteropHelper.Extensions
 {
     public static class WebViewExtensions
     {
+        private static string _communicationUrl;
+
         public static async Task<TResultType> EvaluateAsynchronousJavaScriptAsync<TResultType>(
             this WebView webView, string asynchronousJavascriptFunction, List<string> args)
             where TResultType : class
@@ -48,16 +50,26 @@ namespace MAUI.WebViewInteropHelper.Extensions
             return result.Result as TResultType;
         }
 
-        public static void InitializeFullInteropMode(this WebView webView, string communicationApiUrl)
+        public static void InitializeFullInteropMode(this WebView webView, string communicationUrl)
         {
+            _communicationUrl = communicationUrl; 
             webView.Navigating += OnWebViewNavigating;
+            webView.Navigated += OnWebViewNavigated;
+        }
+
+        private static void OnWebViewNavigated(object sender, WebNavigatedEventArgs e)
+        {
+            var webView = (WebView)sender;
+            webView.Eval($"initializeFullInteroperability(\"{_communicationUrl}\")");
+            webView.Navigated -= OnWebViewNavigated;
         }
 
         private static async void OnWebViewNavigating(object sender, WebNavigatingEventArgs e)
         {
-            var webView = sender as WebView;
+            var webView = (WebView)sender;
+            
             var urlParts = e.Url.Split("?", 2);
-            if (!urlParts[0].Equals("http://taskcompleted/"))
+            if (!urlParts[0].Equals(_communicationUrl))
             {
                 return;
             }
