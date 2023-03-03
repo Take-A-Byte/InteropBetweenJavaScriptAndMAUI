@@ -1,9 +1,10 @@
-﻿namespace InteropBetweenJavaScriptAndMAUI;
-
-public partial class AppShell : Shell
+﻿namespace InteropBetweenJavaScriptAndMAUI
 {
-	public AppShell()
-	{
-		InitializeComponent();
-	}
+    public partial class AppShell : Shell
+    {
+        public AppShell()
+        {
+            InitializeComponent();
+        }
+    }
 }

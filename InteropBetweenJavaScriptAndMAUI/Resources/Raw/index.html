@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Interop between Javascript and MAUI</title>
+</head>
+<body>
+<script type="text/javascript">
+    var results = []
+
+    function getResult(id) {
+        try {
+            var numId = Number(id);
+            var requestedResult = results[numId];
+            delete results[numId]
+            return requestedResult;
+        } catch (ex) {
+            return {
+                'error': JSON.stringify(ex.toString())
+            }
+        }
+    }
+
+    function resolveAfter2Seconds(id) {
+        (new Promise(resolve => {
+            setTimeout(() => { resolve(); }, 2000);
+        })).then(() => {
+            results[id] = {
+                result: 'resolved after 2 seconds'
+            }
+
+            window.location = `http://taskCompleted?${id}`;
+        });
+
+        return {
+            'success': true,
+        };
+    }
+
+    function resolveImmediately() {
+        return{
+            result: 'resolved immediately'
+        };
+    }
+    
+</script>
+</body>
+</html>

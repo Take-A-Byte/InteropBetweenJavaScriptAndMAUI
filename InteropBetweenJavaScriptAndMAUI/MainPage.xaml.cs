@@ -2,23 +2,21 @@
 
 public partial class MainPage : ContentPage
 {
-	int count = 0;
+    public MainPage()
+    {
+        InitializeComponent();
+        WebView.InitializeFullInteropMode("http://taskcompleted/");
+    }
+    
+    private async void OnCallSynchronousFunctionClicked(object sender, EventArgs e)
+    {
+        ResultDisplay.Text = await WebView.EvaluateSynchronousJavaScriptAsync<string>
+        ("resolveImmediately", new List<string>());
+    }
 
-	public MainPage()
-	{
-		InitializeComponent();
-	}
-
-	private void OnCounterClicked(object sender, EventArgs e)
-	{
-		count++;
-
-		if (count == 1)
-			CounterBtn.Text = $"Clicked {count} time";
-		else
-			CounterBtn.Text = $"Clicked {count} times";
-
-		SemanticScreenReader.Announce(CounterBtn.Text);
-	}
+    private async void OnCallAsynchronousFunctionClicked(object sender, EventArgs e)
+    {
+        ResultDisplay.Text = await WebView.EvaluateAsynchronousJavaScriptAsync<string>
+            ("resolveAfter2Seconds", new List<string>());
+    }
 }
-

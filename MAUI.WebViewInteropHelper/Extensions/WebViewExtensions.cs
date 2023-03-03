@@ -3,9 +3,9 @@ using MAUI.WebViewInteropHelper.Exceptions;
 
 namespace MAUI.WebViewInteropHelper.Extensions
 {
-    internal static class WebViewExtensions
+    public static class WebViewExtensions
     {
-        internal static async Task<TResultType> EvaluateAsynchronousJavaScriptAsync<TResultType>(
+        public static async Task<TResultType> EvaluateAsynchronousJavaScriptAsync<TResultType>(
             this WebView webView, string asynchronousJavascriptFunction, List<string> args)
             where TResultType : class
         {
@@ -32,8 +32,8 @@ namespace MAUI.WebViewInteropHelper.Extensions
             }
         }
 
-        internal static async Task<TResultType> EvaluateSynchronousJavaScriptAsync<TResultType>(
-            this WebView webView, string synchronousJavascriptFunction, string[] args)
+        public static async Task<TResultType> EvaluateSynchronousJavaScriptAsync<TResultType>(
+            this WebView webView, string synchronousJavascriptFunction, List<string> args)
             where TResultType : class
         {
             var resultJson = await webView.EvaluateJavaScriptAsync(
@@ -46,6 +46,37 @@ namespace MAUI.WebViewInteropHelper.Extensions
             }
 
             return result.Result as TResultType;
+        }
+
+        public static void InitializeFullInteropMode(this WebView webView, string communicationApiUrl)
+        {
+            webView.Navigating += OnWebViewNavigating;
+        }
+
+        private static async void OnWebViewNavigating(object sender, WebNavigatingEventArgs e)
+        {
+            var webView = sender as WebView;
+            var urlParts = e.Url.Split("?", 2);
+            if (!urlParts[0].Equals("http://taskcompleted/"))
+            {
+                return;
+            }
+
+            // prevent the navigation to complete
+            e.Cancel = true;
+            int id = int.Parse(urlParts[1]);
+            var taskCompletionSource = WebTaskManager.GetAndRemoveTaskCompletionSource(id);
+
+            var resultJson = await webView.EvaluateJavaScriptAsync($"getResult({id})");
+            var result = resultJson.DeserializeWebResult();
+            if (result.Success)
+            {
+                taskCompletionSource.SetResult(result.Result);
+            }
+            else
+            {
+                taskCompletionSource.SetException(new WebScriptExecutionException(null, result.Error));
+            }
         }
     }
 }
